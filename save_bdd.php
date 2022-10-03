@@ -7,6 +7,8 @@ header('Content-Type: text/html; charset=utf-8');
 $path = $pathParent . "/fichiers_txt";
 $nbMotsTotal = 0;
 $nbMotsSave = 0;
+$GLOBALS["array_authorized_extension"] = array("txt");  //array contenant les extensions de fichiers à scan
+
 
 $mysqlClient = new PDO($dbname, $login, $password);
 
@@ -17,7 +19,7 @@ function addEmptyWordToArray(){
     $tab_mots_vide = array();
     $fichier_mots_vide = strtolower(file_get_contents($GLOBALS["pathParent"] . '/mots_vide/fichier_mots_vide.txt'));
 
-    $separateurs =  "'’. -/\n\t\r,…][(«»<>)";
+    $separateurs =  "'. -!?;/\n\t\r,…][(«»<>)";
     $tok =  strtok($fichier_mots_vide, $separateurs);
 
     while ($tok !== false) {
@@ -39,7 +41,10 @@ function addFileNameToArray(){
 
     foreach ($fichiers_txt as $fichier) {
         if ($fichier != '.' && $fichier != '..') {
-            $tab_fichiers[$fichier] = filemtime($GLOBALS["path"] . "/" . $fichier);
+            $path_parts = pathinfo($GLOBALS["path"] . "/" . $fichier);
+            if (in_array($path_parts['extension'], $GLOBALS["array_authorized_extension"])){
+                $tab_fichiers[$fichier] = filemtime($GLOBALS["path"] . "/" . $fichier);
+            }
         }
     }
     return $tab_fichiers;
@@ -54,7 +59,7 @@ function addFileWordOccurence($tab_fichiers){
     $tabs_mots_vide = addEmptyWordToArray();
 
     foreach ($tab_fichiers as $fichier => $val) {
-        $texte = strtolower(file_get_contents($GLOBALS["path"] . "/" . $fichier));
+        $texte = mb_strtolower(file_get_contents($GLOBALS["path"] . "/" . $fichier));
 
         $separateurs =  "'’. -/\n\t\r,…][(«»<>)";
         $tok =  strtok($texte, $separateurs);
