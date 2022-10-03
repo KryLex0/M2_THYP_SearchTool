@@ -2,6 +2,6 @@
 
 $dbname = "mysql:dbname=hypermedia;host=localhost";
 $login = "root";
-$password = "root"; 
+$password = "";//"root"; 
 
 ?>

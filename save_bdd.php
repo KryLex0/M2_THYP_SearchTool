@@ -34,11 +34,11 @@ function addEmptyWordToArray(){
 //afin de mettre les noms des fichiers dans une array de type (nomFichier=>timestampModif)
 function addFileNameToArray(){
     $fichiers_txt = scandir($GLOBALS["path"]);
-    array_shift($fichiers_txt); //supprime les 2 premiers resultats vides '.' et '..'
-    array_shift($fichiers_txt); 
+    //array_shift($fichiers_txt); //supprime les 2 premiers resultats vides '.' et '..'
+    //array_shift($fichiers_txt); 
 
     foreach ($fichiers_txt as $fichier) {
-        if ($fichier != '.' || $fichier != '..') {
+        if ($fichier != '.' && $fichier != '..') {
             $tab_fichiers[$fichier] = filemtime($GLOBALS["path"] . "/" . $fichier);
         }
     }
@@ -132,7 +132,7 @@ function removeDataToDatabase(){
     $result->execute();
 }
 
-
+/*
 //mets à jour les données dans la bdd en fonction d'une modification sur un fichier, d'un ajout ou d'une suppression d'un fichier
 function updateDataToDatabase(){
     $sqlQuery = "SELECT nom_fichier, timestamp_modif FROM filelastupdate";
@@ -221,6 +221,6 @@ function updateSearchWordFile($all_tab, $actualTimestampFile){
         $i += 1;
     }
 }
-
+*/
 
 ?>

@@ -15,14 +15,15 @@ $pathTextFile = $pathParent . "/fichiers_txt";
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
 <button onclick="addDataBDD()">Ajouter données BDD</button>
 <button onclick="removeDataBDD()">Supprimer données BDD</button>
-<button onclick="updateDataBDD()">Vérifier données BDD</button>
+<!-- <button onclick="updateDataBDD()">Vérifier données BDD</button> -->
 
 <h3 style="text-align: center;">Outil de recherche</h3>
-<form method="POST" action="index.php" id="rechercheMot" style="text-align: center;">
-    <span><input type="text" name="searchText" required="required">
-    <input type=submit value="Rechercher" name="searchButton">
-</form>
-
+<div class="divSearchBar">
+    <form method="POST" action="index.php" id="rechercheMot" style="text-align: center;">
+        <span><input type="text" name="searchText" required="required">
+        <input type=submit value="Rechercher" name="searchButton">
+    </form>
+</div>
 
 
 
@@ -40,9 +41,11 @@ if(isset($_POST['action']) && $_POST['action'] == 'addSuccess') {
 if(isset($_POST['action']) && $_POST['action'] == 'removeSuccess') {
     removeDataToDatabase();
 }
+/*
 if(isset($_POST['action']) && $_POST['action'] == 'updateSuccess') {
     updateDataToDatabase();
 }
+*/
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST)) {
     try {
@@ -55,23 +58,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST)) {
         $searchWordFile = $result->fetchAll();
 
         ?>
-        <p style="text-align: center;">'<?php echo $wordToSearch; ?>' est présent dans <?php echo count($searchWordFile); ?> fichier(s).</p>
+        <p style="text-align: center;">Le mot '<?php echo $wordToSearch; ?>' est présent dans <?php echo count($searchWordFile);if(count($searchWordFile)<=1){echo " fichier.";}else{echo " fichiers.";} ?></p>
+        <div class="divSearchResult">
         <?php
 
         foreach ($searchWordFile as $tab => $val) {
             $urlTxt = $pathTextFile . "/" . $val["nom_fichier"]; ?>
             <ul>
-                <a href="#">
-                    <li style="text-align: center;" id="<?php echo $val["nom_fichier"]; ?>" onclick="test(this)">
-                        <?php echo "[" . $val["nom_fichier"] . "] : " . $val["nb_occurence"]; ?>
+                
+                    <li style="" id="<?php echo $val["nom_fichier"]; ?>" onclick="test(this)">
+                        Dans le fichier
+                        <a href="#">
+                            <?php echo " [" . $val["nom_fichier"] . "]"; ?>
+                        </a>
+                        il y a <?php echo $val["nb_occurence"] . " occurences."; ?>
                     </li>
                 </a>
             </ul>
 
+<?php } ?>
+        </div>
 <?php
-
-        }
-
         unset($_POST);
         unset($_REQUEST);
     } catch (Exception $e) {
