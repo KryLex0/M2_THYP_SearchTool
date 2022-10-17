@@ -34,7 +34,6 @@ $tab_fichiers = addFileNameToArray(); // array (nomFichier => timestamp) de tout
 $all_tab = addFileWordOccurence($tab_fichiers); //array (nomFichier => array(mots=>nbOccurence))
 //updateDataToDatabase();
 
-
 if(isset($_POST['action']) && $_POST['action'] == 'addSuccess') {
     addDataToDatabase($tab_fichiers, $all_tab);
 }
@@ -52,9 +51,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST)) {
         $wordToSearch = strtolower($_POST["searchText"]);
         $mysqlClient = new PDO($dbname, $login, $password);
 
-        $sqlQuery = "SELECT * FROM searchwordfile WHERE mots='$wordToSearch' ORDER BY nb_occurence DESC";
+        // $sqlQuery = "SELECT * FROM word_occurence WHERE mot='$wordToSearch' ORDER BY nb_occurence DESC";
+        // $result = $mysqlClient->prepare($sqlQuery);
+        // $result->execute();
+        // $searchWordFile = $result->fetchAll();
+
+        $sqlQuery = "SELECT DISTINCT wof.nb_occurence, wf.nom_fichier, wl.mot FROM word_occurence_file wof, word_file wf, word_list wl WHERE wl.mot='$wordToSearch' AND wl.id=wof.idWord AND wof.idFile=wf.id ORDER BY nb_occurence DESC";
         $result = $mysqlClient->prepare($sqlQuery);
         $result->execute();
+        print_r($result);
         $searchWordFile = $result->fetchAll();
 
         ?>
@@ -71,7 +76,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST)) {
                         <a href="#">
                             <?php echo " [" . $val["nom_fichier"] . "]"; ?>
                         </a>
-                        il y a <?php echo $val["nb_occurence"] . " occurences."; ?>
+                        il y a <?php echo $val["nb_occurence"] . " occurence(s)."; ?>
                     </li>
                 </a>
             </ul>

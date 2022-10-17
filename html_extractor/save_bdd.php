@@ -90,18 +90,25 @@ function addFileWordOccurence($tab_fichiers){
 
 //sauvegarder les noms des fichiers dans la BDD
 //ajoute dans une table le nomFichier et dateModif
-function addFileDataToDatabase($tab_fichiers){  //tab_fichiers = array(nomFichier, timestamp),...
-    $i=0;    
-    foreach ($tab_fichiers as $fichier) {
-        $fileName = array_keys($tab_fichiers)[$i];
-        $sqlQuery = "INSERT INTO filelastupdate(nom_fichier, timestamp_modif) VALUES('$fileName', '$fichier')";
-        $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
-        $result->execute();
-        $i += 1;
-    }
+// function addFileDataToDatabase($tab_fichiers){  //tab_fichiers = array(nomFichier, timestamp),...
+//     $i=0;    
+//     foreach ($tab_fichiers as $fichier) {
+//         $fileName = array_keys($tab_fichiers)[$i];
+//         $sqlQuery = "INSERT INTO word_file(nom_fichier, timestamp_modif) VALUES('$fileName', '$fichier')";
+//         $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
+//         $result->execute();
+//         $i += 1;
+//     }
     
-}
+    
+// }
 
+function addFileDataToDatabase($fileName, $timestamp){  //tab_fichiers = array(nomFichier, timestamp),...    
+    $sqlQuery = "INSERT INTO word_file(nom_fichier, timestamp_modif) VALUES('$fileName', '$timestamp')";
+    $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
+    $result->execute();       
+    return $GLOBALS["mysqlClient"]->lastInsertId();
+}
 
 
 
@@ -111,28 +118,79 @@ function addFileDataToDatabase($tab_fichiers){  //tab_fichiers = array(nomFichie
 //ajoute dans la BDD les données (mot, nbOccurence, nomFichier)
 function addDataToDatabase($tab_fichiers, $all_tab){
     $i = 0;
-    addFileDataToDatabase($tab_fichiers);
+    //addFileDataToDatabase($tab_fichiers);
     
     foreach($all_tab as $tab){
+        $fileName = array_keys($tab_fichiers)[$i];
+        $timestamp = "temp1";
+        $idFile = addFileDataToDatabase($fileName, $timestamp);
+
         foreach($tab as $key=>$val){
-            $fileName = array_keys($tab_fichiers)[$i];
-            $sqlQuery = "INSERT INTO searchwordfile(mots, nb_occurence, nom_fichier) VALUES('$key', '$val', '$fileName')";
+            $sqlQuery = "INSERT INTO word_list(mot) VALUES('$key')";
             $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
             $result->execute();
+
+            $sqlQuery = "SELECT id FROM word_list WHERE mot='$key';";
+            $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
+            $result->execute();
+            $allIDWord = $result->fetchAll();
+
+            foreach($allIDWord as $idWord){
+                $id = $idWord['id'];
+                $sqlQuery = "INSERT INTO word_occurence_file(idWord, idFile, nb_occurence) VALUES('$id', '$idFile', '$val')";
+                $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
+                $result->execute();
+            }
+            
+
         }
         $i += 1;
     }
     //echo "Il y a " . $GLOBALS["nbMotsTotal"] . " mots au total dont " . $GLOBALS["nbMotsSave"] . " ajoutés a la Base de Données";
 }
 
+//ajoute dans la BDD les données (mot, nbOccurence, nomFichier)
+function addOccurenceDataToDatabase(){
+//    $sqlQueryWord = "INSERT INTO word_list(mot) VALUES('$key')";
+//    $result = $GLOBALS["mysqlClient"]->prepare($sqlQueryWord);
+//    $result->execute();
+
+//    $sqlQueryFile = "SELECT * FROM word_file";
+//    $result = $mysqlClient->prepare($sqlQueryFile);
+//    $result->execute();
+//    $searchFile = $result->fetchAll();
+
+//    $sqlQueryWord = "SELECT * FROM word_list";
+//    $result = $mysqlClient->prepare($sqlQueryWord);
+//    $result->execute();
+//    $searchWord = $result->fetchAll();
+
+
+//     foreach($all_tab as $tab){
+//         foreach($tab as $key=>$val){
+//             $fileName = array_keys($tab_fichiers)[$i];
+//             $sqlQuery = "INSERT INTO word_list(mot) VALUES('$key')";
+//             $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
+//             $result->execute();
+
+//         }
+//         $i += 1;
+//     }
+//     //echo "Il y a " . $GLOBALS["nbMotsTotal"] . " mots au total dont " . $GLOBALS["nbMotsSave"] . " ajoutés a la Base de Données";
+}
+
 
 //permet de supprimer le contenu de toutes les tables 
 function removeDataToDatabase(){
-    $sqlQuery = "TRUNCATE TABLE searchwordfile";
+    $sqlQuery = "TRUNCATE TABLE word_file";
     $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
     $result->execute();
 
-    $sqlQuery = "TRUNCATE TABLE filelastupdate";
+    $sqlQuery = "TRUNCATE TABLE word_list";
+    $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
+    $result->execute();
+
+    $sqlQuery = "TRUNCATE TABLE word_occurence_file";
     $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
     $result->execute();
 }
@@ -155,7 +213,7 @@ function updateDataToDatabase(){
         if(!in_array($val["nom_fichier"], array_keys($allFilesFolder))){
             echo $val["nom_fichier"] . " supprimé |||||||";
             $fileName = $val['nom_fichier'];
-            $sqlQuery = "DELETE FROM searchwordfile WHERE nom_fichier='$fileName'"; //supprime toutes les lignes dont les fichiers ont été modifiés
+            $sqlQuery = "DELETE FROM word_occurence WHERE nom_fichier='$fileName'"; //supprime toutes les lignes dont les fichiers ont été modifiés
             $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
             $result->execute();
 
@@ -191,7 +249,7 @@ function updateDataToDatabase(){
 
             foreach($tabs as $key=>$array){
                 foreach($array as $word=>$nbOccur){
-                    $sqlQuery = "INSERT INTO searchwordfile(mots, nb_occurence, nom_fichier) VALUES('$word', '$nbOccur', '$key')";
+                    $sqlQuery = "INSERT INTO word_occurence(mot, nom_fichier, nb_occurence) VALUES('$word', '$nbOccur', '$key')";
                     $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
                     $result->execute();
 
@@ -210,7 +268,7 @@ function updateSearchWordFile($all_tab, $actualTimestampFile){
     foreach($all_tab as $tab){
         $fileName = array_keys($all_tab)[$i];
 
-        $sqlQuery = "DELETE FROM searchwordfile WHERE nom_fichier='$fileName'"; //supprime toutes les lignes dont les fichiers ont été modifiés
+        $sqlQuery = "DELETE FROM word_occurence WHERE nom_fichier='$fileName'"; //supprime toutes les lignes dont les fichiers ont été modifiés
         $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
         $result->execute();
         
@@ -219,7 +277,7 @@ function updateSearchWordFile($all_tab, $actualTimestampFile){
         $result->execute();
 
         foreach($tab as $key=>$val){    
-            $sqlQuery = "INSERT INTO searchwordfile(mots, nb_occurence, nom_fichier) VALUES('$key', '$val', '$fileName')";  //ajoute les mots et nb_occurence des ficheirs modifiés
+            $sqlQuery = "INSERT INTO word_occurence(mot, nom_fichier, nb_occurence) VALUES('$key', '$val', '$fileName')";  //ajoute les mots et nb_occurence des ficheirs modifiés
             $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
             $result->execute();
         }
