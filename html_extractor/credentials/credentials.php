@@ -2,6 +2,6 @@
 
 $dbname = "mysql:dbname=search_word_tool;host=localhost";
 $login = "root";
-$password = "";//"root"; 
+$password = "root";//"root"; 
 
 ?>

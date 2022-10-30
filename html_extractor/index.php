@@ -1,12 +1,35 @@
 <?php
-
+ini_set("allow_url_fopen ", false);
 $pathParent = dirname(__FILE__);
 include $pathParent . "/credentials/credentials.php";
 require $pathParent . "/save_bdd.php";
+require $pathParent . "/html_functions.php";
 
 header('Content-Type: text/html; charset=utf-8');
 
 $pathTextFile = $pathParent . "/fichiers_txt";
+
+
+//$htmlLinksArray = addHtmlLinksToArray();
+
+/*
+$htmlUrl = "https://fr.wikipedia.org/wiki/Liste_des_%C3%A9pisodes_de_One_Piece";//"https://stackoverflow.com/questions/819182/how-do-i-get-the-html-code-of-a-web-page-in-php";"https://www.youtube.com/watch?v=vvN8jr-CGiE"
+$htmlData = get_html_data($htmlUrl);
+
+$titlePage = getTitle($htmlUrl);
+$bodyPage = getBody($htmlUrl);
+
+echo "Title: " . $titlePage . " |||||||||||| \n";
+echo "Body: " . $bodyPage . "//////////// \n";
+
+echo "MetaData: \n";
+$metadatas = getMetaData($htmlUrl);
+foreach($metadatas as $meta=>$val){
+    echo $meta . "====>" . $val . " |||||||||||| ";
+}
+
+*/
+
 
 ?>
 <!DOCTYPE html>
@@ -26,8 +49,8 @@ $pathTextFile = $pathParent . "/fichiers_txt";
 </div>
 
 
-
 <?php
+
 
 $tab_fichiers = addFileNameToArray(); // array (nomFichier => timestamp) de tout les fichiers
 
@@ -48,40 +71,44 @@ if(isset($_POST['action']) && $_POST['action'] == 'updateSuccess') {
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST)) {
     try {
+        $dataHtmlPage = addDataHtmlPageToArray();
+
         $wordToSearch = strtolower($_POST["searchText"]);
-        $mysqlClient = new PDO($dbname, $login, $password);
-
-        // $sqlQuery = "SELECT * FROM word_occurence WHERE mot='$wordToSearch' ORDER BY nb_occurence DESC";
-        // $result = $mysqlClient->prepare($sqlQuery);
-        // $result->execute();
-        // $searchWordFile = $result->fetchAll();
-
-        $sqlQuery = "SELECT DISTINCT wof.nb_occurence, wf.nom_fichier, wl.mot FROM word_occurence_file wof, word_file wf, word_list wl WHERE wl.mot='$wordToSearch' AND wl.id=wof.idWord AND wof.idFile=wf.id ORDER BY nb_occurence DESC";
-        $result = $mysqlClient->prepare($sqlQuery);
-        $result->execute();
-        print_r($result);
-        $searchWordFile = $result->fetchAll();
+        $description_page = "";
 
         ?>
-        <p style="text-align: center;">Le mot '<?php echo $wordToSearch; ?>' est présent dans <?php echo count($searchWordFile);if(count($searchWordFile)<=1){echo " fichier.";}else{echo " fichiers.";} ?></p>
         <div class="divSearchResult">
         <?php
 
-        foreach ($searchWordFile as $tab => $val) {
-            $urlTxt = $pathTextFile . "/" . $val["nom_fichier"]; ?>
+        foreach ($dataHtmlPage as $url=>$pageData){
+            if(array_key_exists("description", $pageData[0]["MetaData"])){
+                $description_page = implode(' ', array_slice(explode(' ', $pageData[0]["MetaData"]["description"]), 0, 13)) . "</br>" . implode(' ', array_slice(explode(' ', $pageData[0]["MetaData"]["description"]), 13, 15)) . "...";
+                //echo $pageData[0]["MetaData"]["description"];
+            }else{
+                $description_page = implode(' ', array_slice(explode(' ', $pageData[0]["BodyContent"]), 0, 13)) . "</br>" . implode(' ', array_slice(explode(' ', $pageData[0]["BodyContent"]), 13, 15)) . "...";
+                //echo mb_substr($bodyPage, 0, 80) . "</br>" . mb_substr($bodyPage, 80, 80) . "...";
+            }
+            if(strpos(strtolower($pageData[0]["Title"]), $wordToSearch) !== false || 
+                strpos(strtolower($description_page), $wordToSearch) !== false || 
+                    strpos(strtolower($pageData[0]["BodyContent"]), $wordToSearch) !== false){
+?>
             <ul>
-                
-                    <li style="" id="<?php echo $val["nom_fichier"]; ?>" onclick="test(this)">
-                        Dans le fichier
-                        <a href="#">
-                            <?php echo " [" . $val["nom_fichier"] . "]"; ?>
-                        </a>
-                        il y a <?php echo $val["nb_occurence"] . " occurence(s)."; ?>
-                    </li>
+                <a href=<?php echo $url; ?> target="_blank"><i><?php echo mb_substr($url, 0, 40) . "..."; ?></i>
+                <h3 style="font-size: 25px; margin-top:5px; margin-bottom:8px">
+                    <?php 
+                        echo $pageData[0]["Title"];
+                    ?>
+                </h3>
                 </a>
+                <?php
+                    echo $description_page;
+                ?>
             </ul>
+            </br>
 
-<?php } ?>
+<?php 
+            }
+        } ?>
         </div>
 <?php
         unset($_POST);
