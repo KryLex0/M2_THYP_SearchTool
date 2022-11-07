@@ -58,11 +58,13 @@ $all_tab = addFileWordOccurence($tab_fichiers); //array (nomFichier => array(mot
 //updateDataToDatabase();
 
 if(isset($_POST['action']) && $_POST['action'] == 'addSuccess') {
-    addDataToDatabase($tab_fichiers, $all_tab);
+    saveDataPage();
 }
+
 if(isset($_POST['action']) && $_POST['action'] == 'removeSuccess') {
-    removeDataToDatabase();
+    removeDataPage();
 }
+
 /*
 if(isset($_POST['action']) && $_POST['action'] == 'updateSuccess') {
     updateDataToDatabase();
@@ -71,37 +73,71 @@ if(isset($_POST['action']) && $_POST['action'] == 'updateSuccess') {
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST)) {
     try {
-        $dataHtmlPage = addDataHtmlPageToArray();
+        #$dataHtmlPage = addDataHtmlPageToArray();
 
         $wordToSearch = strtolower($_POST["searchText"]);
         $description_page = "";
+
+        $mysqlClient = new PDO($dbname, $login, $password);
+
+        // $sqlQuery = "SELECT * FROM word_occurence WHERE mot='$wordToSearch' ORDER BY nb_occurence DESC";
+        // $result = $mysqlClient->prepare($sqlQuery);
+        // $result->execute();
+        // $searchWordFile = $result->fetchAll();
+
+        $sqlQuery = "SELECT pageData.pageURL, pageData.pageTitle, pageData.pageDescription, wordList.idPage FROM page_data pageData, word_list wordList WHERE wordList.mot='$wordToSearch' AND wordList.idPage=pageData.id ORDER BY nbOccurence DESC";
+        $result = $mysqlClient->prepare($sqlQuery);
+        $result->execute();
+        $searchWordPage = $result->fetchAll();
+        print_r($searchWordPage);
 
         ?>
         <div class="divSearchResult">
         <?php
 
-        foreach ($dataHtmlPage as $url=>$pageData){
-            if(array_key_exists("description", $pageData[0]["MetaData"])){
-                $description_page = implode(' ', array_slice(explode(' ', $pageData[0]["MetaData"]["description"]), 0, 13)) . "</br>" . implode(' ', array_slice(explode(' ', $pageData[0]["MetaData"]["description"]), 13, 15)) . "...";
-                //echo $pageData[0]["MetaData"]["description"];
-            }else{
-                $description_page = implode(' ', array_slice(explode(' ', $pageData[0]["BodyContent"]), 0, 13)) . "</br>" . implode(' ', array_slice(explode(' ', $pageData[0]["BodyContent"]), 13, 15)) . "...";
-                //echo mb_substr($bodyPage, 0, 80) . "</br>" . mb_substr($bodyPage, 80, 80) . "...";
-            }
-            if(strpos(strtolower($pageData[0]["Title"]), $wordToSearch) !== false || 
-                strpos(strtolower($description_page), $wordToSearch) !== false || 
-                    strpos(strtolower($pageData[0]["BodyContent"]), $wordToSearch) !== false){
+        #foreach ($dataHtmlPage as $url=>$pageData){
+        foreach ($searchWordPage as $key=>$val){
+        
+            #$tabWordOccurence = getWordOccurence($pageData[0]);
+
+            $description_page = $val["pageDescription"];
+            if(strpos(strtolower($val["pageTitle"]), $wordToSearch) !== false || 
+                strpos(strtolower($val["pageDescription"]), $wordToSearch) !== false || 
+                    in_array($wordToSearch, $val["mot"]) !== false){
 ?>
             <ul>
-                <a href=<?php echo $url; ?> target="_blank"><i><?php echo mb_substr($url, 0, 40) . "..."; ?></i>
+                <a href=<?php echo $val["pageURL"]; ?> target="_blank"><i><?php echo mb_substr($val["pageURL"], 0, 40) . "..."; ?></i>
                 <h3 style="font-size: 25px; margin-top:5px; margin-bottom:8px">
                     <?php 
-                        echo $pageData[0]["Title"];
+                        echo $val["pageTitle"];
                     ?>
                 </h3>
                 </a>
                 <?php
-                    echo $description_page;
+
+                
+                    echo $description_page . "<br>";
+
+                    $pageID = $val['idPage'];
+                    $sqlQuery = "SELECT DISTINCT wordList.mot, wordList.nbOccurence FROM page_data pageData, word_list wordList WHERE wordList.idPage='$pageID' ORDER BY nbOccurence DESC";
+                    $result = $mysqlClient->prepare($sqlQuery);
+                    $result->execute();
+                    $searchWordOccurence = $result->fetchAll();
+                    //print_r($searchWordOccurence[0]);
+                    displayArrayWordsOccurence($searchWordOccurence);
+                
+                    /*
+                    $nbWords = 0;
+                    foreach($tabWordOccurence as $val){
+                        while($nbWords<10){
+                            echo $val;
+                            $nbWords += 1;
+                        }
+                        ?>
+
+                    <?php
+                    }
+                    */
                 ?>
             </ul>
             </br>

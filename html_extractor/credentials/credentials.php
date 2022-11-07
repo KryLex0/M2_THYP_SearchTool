@@ -1,7 +1,7 @@
 <?php
 
-$dbname = "mysql:dbname=search_word_tool;host=localhost";
+$dbname = "mysql:dbname=search_word_tool_html;host=localhost";
 $login = "root";
-$password = "root";//"root"; 
+$password = "";//"root"; 
 
 ?>

@@ -27,6 +27,7 @@ function addDataHtmlPageToArray(){
     $dataPage = array();
     $array_html_links = addHtmlLinksToArray();
     foreach($array_html_links as $urlPage){
+        $dataPage["URL"] = $urlPage;
         $dataPage["Title"] = getTitle($urlPage);
         $dataPage["MetaData"] = getMetaData($urlPage);
         $dataPage["BodyContent"] = getBodyContent($urlPage);
@@ -91,5 +92,222 @@ function getBodycontent($url){
     return $bodyContent;
 }
 
+function getWordOccurence($data){
+    $tab_occurence = array();
+    $separateur = "'’;. -/\n\t\r,…][(«»<>)";
+    $tabs_mots_vide = addEmptyWordToArray();
+
+    
+        #foreach($val as $value){
+
+
+        #}
+        /*
+        $tok =  strtok($val, $separateur);
+
+        while ($tok !== false) {
+            if ((strlen($tok) > 2) && !in_array($tok, $tabs_mots_vide)) {
+                if (array_key_exists($tok, $tab_occurence)) {
+                    $tab_occurence[$tok] += 1;
+                } else {
+                    $tab_occurence[$tok] = 1;
+                }
+            }
+            $tok = strtok($separateur);
+        }
+        arsort($tab_occurence);
+        */
+
+    return $tab_occurence;
+
+}
+
+function getPageDescription($page){
+    $description_page = "";
+    if (array_key_exists("description", $page[0]["MetaData"])) {
+        $description_page = implode(' ', array_slice(explode(' ', $page[0]["MetaData"]["description"]), 0, 13)) . "</br>" . implode(' ', array_slice(explode(' ', $page[0]["MetaData"]["description"]), 13, 15)) . "...";
+        //echo $pageData[0]["MetaData"]["description"];
+    } else {
+        $description_page = implode(' ', array_slice(explode(' ', $page[0]["BodyContent"]), 0, 13)) . "</br>" . implode(' ', array_slice(explode(' ', $page[0]["BodyContent"]), 13, 15)) . "...";
+        //echo mb_substr($bodyPage, 0, 80) . "</br>" . mb_substr($bodyPage, 80, 80) . "...";
+    }
+    return $description_page;
+}
+
+
+/************************************************************************/
+
+function displayArrayWordsOccurence($page){
+    //$tab_pages = addDataHtmlPageToArray();
+    
+    #foreach($tab_pages as $page){
+        #print_r($page);
+        $arrayWords = $page;//getArrayWordsOccurence($page);
+        $nbWords = 0;
+        echo "<div>";
+        foreach ($arrayWords as $key => $val) {
+            #print_r($val);
+            if ($nbWords == 10) {
+                echo "<br>";
+            }
+            if ($nbWords < 20) {
+                $textSize = ($val["nbOccurence"] % 6) * 10;
+                echo "<span style='font-size:" . $textSize . "px; display:inline;'>" . $val["mot"] . "</span>";
+                $nbWords += 1;
+            }
+        }
+        echo "</div>";
+
+
+    #}
+
+}
+
+function getArrayWordsOccurence($page){
+    $tab_occurence_head = array();
+    $tab_occurence_body = array();
+
+    $pageMetaData = "";
+
+    $pageURL  = $page["URL"];
+    $pageTitle  = $page[0]["Title"];
+    $pageDescription  = getPageDescription($page);
+
+    foreach ($page[0] as $val) {
+        if (is_array($val)) {
+            foreach ($val as $value) {
+                $pageMetaData .= $value . ";";
+            }
+        }
+    }
+    //$tab_occurence_head.array_push($pageTitle);
+    //$tab_occurence_head.array_push($pageDescription);
+
+    $tab_occurence_head = array($pageTitle, $pageDescription, $pageMetaData);
+    $tab_occurence_head = getTabOccurenceHead($tab_occurence_head);
+    #print_r($tab_occurence_head);
+
+    #echo "|||| BODY ||||";
+
+    $tab_occurence_body = getTabOccurenceBody($page[0]["BodyContent"]);
+    #print_r($tab_occurence_body);
+
+    #echo "<br><br>";
+
+    $arrayWords = concatArrayOccurenceHeadBody($tab_occurence_head, $tab_occurence_body);
+    return $arrayWords;
+}
+
+function getTabOccurenceHead($tab_array_head){
+    $separateur = "'’;. —-_/\n\t\r,…=:][(«»<>)?!";
+    $tabs_mots_vide = addEmptyWordToArray();
+    $tab_occurence_head = array();
+
+    foreach($tab_array_head as $headElement){
+        $headElement = preg_replace('/[0-9]+/', '', $headElement);
+        $tok =  strtok($headElement, $separateur);
+
+        while ($tok !== false) {
+            if ((strlen($tok) > 2) && !in_array($tok, $tabs_mots_vide)) {
+                if (array_key_exists($tok, $tab_occurence_head)) {
+                    $tab_occurence_head[$tok] += 2;
+                } else {
+                    $tab_occurence_head[$tok] = 2;
+                }
+            }
+            $tok = strtok($separateur);
+        }
+    }
+    arsort($tab_occurence_head);
+    return $tab_occurence_head;
+
+}
+
+function getTabOccurenceBody($bodyContent)
+{
+    #echo $bodyContent;
+    $separateur = "'’;. —-_/\n\t\r,…=:][(«»<>)?!";
+    $tabs_mots_vide = addEmptyWordToArray();
+    $tab_occurence_body = array();
+
+    $bodyContent = preg_replace('/[0-9]+/', '', $bodyContent);
+
+    $tok =  strtok($bodyContent, $separateur);
+
+
+    while ($tok !== false) {
+        if ((strlen($tok) > 2) && !in_array($tok, $tabs_mots_vide)) {
+            if (array_key_exists($tok, $tab_occurence_body)) {
+                $tab_occurence_body[$tok] += 1;
+            } else {
+                $tab_occurence_body[$tok] = 1;
+            }
+        }
+        $tok = strtok($separateur);
+    }
+
+    arsort($tab_occurence_body);
+    return $tab_occurence_body;
+}
+
+function saveDataPage(){
+        $tab_pages = addDataHtmlPageToArray();
+
+        foreach($tab_pages as $page){
+            $pageURL  = $page[0]["URL"];
+            $pageTitle  = $page[0]["Title"];
+            $pageDescription  = getPageDescription($page);
+
+            $arrayWordOccurence = getArrayWordsOccurence($page);
+
+            $sqlQuery = "INSERT INTO page_data(pageURL, pageTitle, pageDescription) VALUES('$pageURL', '$pageTitle', '$pageDescription')";
+            $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
+            $result->execute();
+            $pageID = $GLOBALS["mysqlClient"]->lastInsertId();
+            echo $pageID;
+
+            foreach($arrayWordOccurence as $word=>$nb_occur){
+                echo $word . ": ";
+                echo $nb_occur;
+                echo "||||";
+                
+                $sqlQuery = "INSERT INTO word_list(mot, nbOccurence, idPage) VALUES('$word', '$nb_occur', $pageID)";
+                $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
+                $result->execute();
+                
+            }
+            
+        }
+    
+        
+
+}
+
+//permet de supprimer le contenu de toutes les tables 
+function removeDataPage()
+{
+    $sqlQuery = "TRUNCATE TABLE word_list";
+    $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
+    $result->execute();
+
+    $sqlQuery = "TRUNCATE TABLE page_data";
+    $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
+    $result->execute();
+}
+
+function concatArrayOccurenceHeadBody($tab_occurence_head, $tab_occurence_body){
+    foreach(array_keys($tab_occurence_head + $tab_occurence_body) as $key){
+        $tab_occurence_total[$key] = @($tab_occurence_head[$key] + $tab_occurence_body[$key]);
+    }
+
+    return $tab_occurence_total;
+    /*
+    foreach($tab_occurence_head as $keyHead=>$valHead){
+        foreach($tab_occurence_body as $keyBody=>$valBody){
+
+        }
+    }
+    */
+}
 
 ?>

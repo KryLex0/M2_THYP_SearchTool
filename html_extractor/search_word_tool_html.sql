@@ -18,20 +18,21 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Base de données : `search_word_tool`
+-- Base de données : `search_word_tool_html`
 --
 
 -- --------------------------------------------------------
 
 --
--- Structure de la table `word_file`
+-- Structure de la table `page_data`
 --
 
-DROP TABLE IF EXISTS `word_file`;
-CREATE TABLE IF NOT EXISTS `word_file` (
+DROP TABLE IF EXISTS `page_data`;
+CREATE TABLE IF NOT EXISTS `page_data` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `nom_fichier` varchar(255) NOT NULL,
-  `timestamp_modif` varchar(255) NOT NULL,
+  `pageURL` varchar(255) NOT NULL,
+  `pageTitle` varchar(255) NOT NULL,
+  `pageDescription` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
@@ -51,13 +52,13 @@ CREATE TABLE IF NOT EXISTS `word_list` (
 -- --------------------------------------------------------
 
 --
--- Structure de la table `word_occurence_file`
+-- Structure de la table `word_occurence_page`
 --
 
-DROP TABLE IF EXISTS `word_occurence_file`;
-CREATE TABLE IF NOT EXISTS `word_occurence_file` (
+DROP TABLE IF EXISTS `word_occurence_page`;
+CREATE TABLE IF NOT EXISTS `word_occurence_page` (
   `idWord` int NOT NULL,
-  `idFile` int NOT NULL,
+  `idPage` int NOT NULL,
   `nb_occurence` int NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 COMMIT;
