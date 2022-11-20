@@ -6,7 +6,7 @@ include $pathParent . "/credentials/credentials.php";
 header('Content-Type: text/html; charset=utf-8');
 $path = $pathParent . "/fichiers_txt";
 
-
+// open files which contains all urls to extract
 function addHtmlLinksToArray(){
     $array_html_links = array();
     $html_links_file = file_get_contents($GLOBALS["pathParent"] . '/html_links/html_links_file.txt');
@@ -22,6 +22,7 @@ function addHtmlLinksToArray(){
     return $array_html_links;
 }
 
+// extract html content from url
 function addDataHtmlPageToArray($arrayHtmlLinks){
     $array_html_data = array();
     $dataPage = array();
@@ -95,36 +96,6 @@ function getBodycontent($url){
     }
     
     return $bodyContent;
-}
-
-function getWordOccurence($data){
-    $tab_occurence = array();
-    $separateur = "'’;. -/\n\t\r,…][(«»<>)";
-    $tabs_mots_vide = addEmptyWordToArray();
-
-    
-        #foreach($val as $value){
-
-
-        #}
-        /*
-        $tok =  strtok($val, $separateur);
-
-        while ($tok !== false) {
-            if ((strlen($tok) > 2) && !in_array($tok, $tabs_mots_vide)) {
-                if (array_key_exists($tok, $tab_occurence)) {
-                    $tab_occurence[$tok] += 1;
-                } else {
-                    $tab_occurence[$tok] = 1;
-                }
-            }
-            $tok = strtok($separateur);
-        }
-        arsort($tab_occurence);
-        */
-
-    return $tab_occurence;
-
 }
 
 function getPageDescription($page){
@@ -297,22 +268,6 @@ function isWordInPage($idPage){
     if(!empty($searchWordPage)){
         $returnValue = true;
     }
-
-    /*
-    foreach ($tab_pages as $page) {
-        $pageURL  = $page[0]["URL"];
-        $pageTitle  = $page[0]["Title"];
-        $pageDescription  = getPageDescription($page);
-        echo $pageDescription;
-
-        if (
-            strpos(strtolower($pageTitle), $word) !== false ||
-            strpos(strtolower($pageDescription), $word) !== false ||
-            str_contains($pageDescription, $word) !== false
-        ) {
-            $returnValue = true;
-        }
-*/
 
     return $returnValue;
 }

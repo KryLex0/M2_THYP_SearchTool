@@ -49,3 +49,32 @@ function test(urlTxt) {
         }
     });
 }
+
+function displayWordClound(pageID){
+    var wordCloudToDisplay = "wordCloud_" + pageID;
+    //var list = document.getElementsByClassName("wordCloud");
+    const list = document.querySelectorAll(".wordCloud");
+
+    if(document.getElementById(wordCloudToDisplay).style.display == "block"){
+
+        list.forEach((item)=>{
+            item.style.display = "none"
+        });
+        
+        document.getElementById(wordCloudToDisplay).style.display = "none";
+    }else if(document.getElementById(wordCloudToDisplay).style.display == "none") {
+        list.forEach((item)=>{
+        if(item.id == wordCloudToDisplay){
+            item.style.display = "block"
+        }else{
+            item.style.display = "none"
+        }
+    });
+        document.getElementById(wordCloudToDisplay).style.display = "block";
+    }
+
+    
+
+    
+    
+}

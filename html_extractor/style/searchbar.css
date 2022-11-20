@@ -34,7 +34,7 @@ span {
     /*text-align: center;*/
 
     padding: 50px;
-    width: max-content;
+    width: 70%;
     margin: 30px auto;
     background: linear-gradient(white, rgba(200, 240, 250, 0.9));
     backdrop-filter: blur(10px);
