@@ -22,10 +22,15 @@ function addHtmlLinksToArray(){
     return $array_html_links;
 }
 
-function addDataHtmlPageToArray(){
+function addDataHtmlPageToArray($arrayHtmlLinks){
     $array_html_data = array();
     $dataPage = array();
-    $array_html_links = addHtmlLinksToArray();
+    $array_html_links = array();
+    if(empty($arrayHtmlLinks)){
+        $array_html_links = addHtmlLinksToArray();
+    }else{
+        $array_html_links = array($arrayHtmlLinks);
+    }
     foreach($array_html_links as $urlPage){
         $dataPage["URL"] = $urlPage;
         $dataPage["Title"] = getTitle($urlPage);
@@ -251,8 +256,8 @@ function getTabOccurenceBody($bodyContent)
 }
 
 function saveDataPage(){
-        $tab_pages = addDataHtmlPageToArray();
-
+        $arrayHtmlLinks = array();
+        $tab_pages = addDataHtmlPageToArray($arrayHtmlLinks);
         foreach($tab_pages as $page){
             $pageURL  = $page[0]["URL"];
             $pageTitle  = $page[0]["Title"];
@@ -264,23 +269,52 @@ function saveDataPage(){
             $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
             $result->execute();
             $pageID = $GLOBALS["mysqlClient"]->lastInsertId();
-            echo $pageID;
 
             foreach($arrayWordOccurence as $word=>$nb_occur){
-                echo $word . ": ";
-                echo $nb_occur;
-                echo "||||";
-                
+                //echo $word . ": ";
+                //echo $nb_occur;
+                //echo "||||";
+                //$word = strtolower($word);
                 $sqlQuery = "INSERT INTO word_list(mot, nbOccurence, idPage) VALUES('$word', '$nb_occur', $pageID)";
                 $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
                 $result->execute();
                 
             }
             
-        }
-    
-        
+        }  
 
+}
+
+function isWordInPage($idPage){
+    //$tab_pages = addDataHtmlPageToArray($array_html_links);
+    $returnValue = false;
+
+    $sqlQuery = "SELECT * FROM word_list WHERE idPage='$idPage'";
+    $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
+    $result->execute();
+    $searchWordPage = $result->fetchAll();
+
+    if(!empty($searchWordPage)){
+        $returnValue = true;
+    }
+
+    /*
+    foreach ($tab_pages as $page) {
+        $pageURL  = $page[0]["URL"];
+        $pageTitle  = $page[0]["Title"];
+        $pageDescription  = getPageDescription($page);
+        echo $pageDescription;
+
+        if (
+            strpos(strtolower($pageTitle), $word) !== false ||
+            strpos(strtolower($pageDescription), $word) !== false ||
+            str_contains($pageDescription, $word) !== false
+        ) {
+            $returnValue = true;
+        }
+*/
+
+    return $returnValue;
 }
 
 //permet de supprimer le contenu de toutes les tables 
