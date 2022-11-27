@@ -1,25 +1,63 @@
-function addDataBDD(str) {
+function addDataBDD() {
+    document.getElementById("operation_BDD").innerHTML = "Sauvegarde des données en cours...";
     $.ajax({
         type: "POST",
-        url: "index.php",
+        url: "phpScript/add_data.php",
         data:{action:'addSuccess'},
-        success:function(html) {
-            alert(str  + " Les données des différents fichiers ont bien été sauvegardé dans la base de données !")
+        //success:function(azerty) {
+        }).done(function (data) {
+
+        //resultAction();
+            console.log(data);
+            resultAction(data);
+            alert("Les données des différents fichiers ont bien été sauvegardé dans la base de données !")
+            document.getElementById("operation_BDD").innerHTML = "Sauvegarde des données terminée !";
+
             //console.log(html);
-        }
-    });
+
+     });
+
 }
 
 function removeDataBDD() {
+    document.getElementById("operation_BDD").innerHTML = "Suppression des données en cours...";
+
     $.ajax({
         type: "POST",
-        url: "index.php",
+        url: "phpScript/remove_data.php",
         data:{action:'removeSuccess'},
-        success:function(html) {
+        //success:function(html) {
+        }).done(function (data) {
+            resultAction(data);
+
             alert("Les données présentes dans la BDD ont bien été supprimés !")
+            document.getElementById("operation_BDD").innerHTML = "Suppression des données terminée !";
+
             //console.log(html);
+    });
+}
+
+function resultAction(data){
+    //alert("test");
+    document.getElementById("output_files").innerHTML = "";
+    document.getElementById("output_files").innerHTML += data + "<br>";
+}
+
+function postForm(word){
+    console.log(word);
+    $.ajax({
+        url: 'index.php',
+        type: 'POST',
+        data: {
+            searchTextInput: word,
+            action: 'resendForm'
+        },
+        success: function(msg) {
+            //alert('Email Sent');
         }
     });
+    window.location = "index.php?searchTextInput=" + word;
+
 }
 
 function updateDataBDD() {
@@ -33,6 +71,19 @@ function updateDataBDD() {
         }
     });
 }
+
+function pageAccessPassword() {
+    let text;
+    let password = prompt("Veuillez saisir le mot de passe:", "");
+    if(password == "admin"){
+        alert("Mot de passe correct !");
+        window.location = "admin_page.php";
+    }else {
+        alert("Mot de passe incorrect !");
+    }
+    //document.getElementById("demo").innerHTML = text;
+}
+
 
 function test(urlTxt) {
     $.ajax({

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1:3306
--- Généré le :  Dim 20 nov. 2022 à 17:39
+-- Généré le :  Dim 27 nov. 2022 à 17:49
 -- Version du serveur :  10.4.10-MariaDB
 -- Version de PHP :  7.3.12
 
@@ -31,11 +31,11 @@ SET time_zone = "+00:00";
 DROP TABLE IF EXISTS `page_data`;
 CREATE TABLE IF NOT EXISTS `page_data` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `pageURL` varchar(255) COLLATE utf8_bin NOT NULL,
-  `pageTitle` varchar(255) COLLATE utf8_bin NOT NULL,
-  `pageDescription` varchar(255) COLLATE utf8_bin NOT NULL,
+  `pageURL` varchar(255) NOT NULL,
+  `pageTitle` varchar(255) NOT NULL,
+  `pageDescription` varchar(255) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -46,11 +46,11 @@ CREATE TABLE IF NOT EXISTS `page_data` (
 DROP TABLE IF EXISTS `word_list`;
 CREATE TABLE IF NOT EXISTS `word_list` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `mot` varchar(255) COLLATE utf8_bin NOT NULL,
-  `nbOccurence` varchar(255) COLLATE utf8_bin NOT NULL,
+  `mot` varchar(255) NOT NULL,
+  `nbOccurence` varchar(255) NOT NULL,
   `idPage` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS `word_occurence_page` (
   `idWord` int(11) NOT NULL,
   `idPage` int(11) NOT NULL,
   `nb_occurence` int(11) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

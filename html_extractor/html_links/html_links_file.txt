@@ -1,4 +1,0 @@
-https://openclassrooms.com/fr/courses/918836-concevez-votre-site-web-avec-php-et-mysql
-https://fr.wikipedia.org/wiki/Oda_Nobunaga
-https://fr.wikipedia.org/wiki/One_Piece
-https://w3guy.com/php-retrieve-web-page-titles-meta-tags

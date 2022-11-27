@@ -4,11 +4,12 @@ $pathParent = dirname(__FILE__);
 include $pathParent . "/credentials/credentials.php";
 #require $pathParent . "/save_bdd.php";
 #require $pathParent . "/html_functions.php";
-require $pathParent . "/html_data_functions.php";
+require $pathParent . "/phpScript/html_data_functions.php";
 
-header('Content-Type: text/html; charset=utf-8');
+header('Content-Type: text/html; charset=UTF-8');
+//header('Content-Type: text/html; charset=UTF-8');
 
-$pathTextFile = $pathParent . "/fichiers_txt";
+$pathTextFile = $pathParent . "/phpScript/fichiers_txt";
 
 
 //$htmlLinksArray = addHtmlLinksToArray();
@@ -40,17 +41,15 @@ foreach($metadatas as $meta=>$val){
 <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
 <script type="text/javascript" src="script/script.js"></script>
 
-<button onclick="addDataBDD()">Ajouter données BDD</button>
-<button onclick="removeDataBDD()">Supprimer données BDD</button>
-<!-- <button onclick="updateDataBDD()">Vérifier données BDD</button> -->
+<button onClick="pageAccessPassword()">Page d'insertion</button>
 
 <h3 style="text-align: center;">Outil de recherche</h3>
 <div class="divSearchBar">
-    <form method="POST" action="index.php" id="rechercheMot" style="text-align: center;">
-        <span><input type="text" name="searchText" required="required">
+    <form method="POST" action="index.php" id="searchWordForm" style="text-align: center;">
+        <span><input id="searchTextInput" type="text" name="searchTextInput" required="required">
             <input type=submit value="Rechercher" name="searchButton">
     </form>
-</div>
+
 
 
 <?php
@@ -61,28 +60,37 @@ foreach($metadatas as $meta=>$val){
 #$all_tab = addFileWordOccurence($tab_fichiers); //array (nomFichier => array(mots=>nbOccurence))
 //updateDataToDatabase();
 
-if (isset($_POST['action']) && $_POST['action'] == 'addSuccess') {
-    saveDataDB();
-}
 
-if (isset($_POST['action']) && $_POST['action'] == 'removeSuccess') {
-    removeDataDB();
-}
 
 /*
 if(isset($_POST['action']) && $_POST['action'] == 'updateSuccess') {
     updateDataToDatabase();
 }
 */
+//print_r(fgetcsv("lemmatisation.csv", ";"));
 
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST)) {
+/*
+if(in_array("manger", $lemmatisation)){
+    echo "manger est dans le tableau";
+}
+else{
+    echo "manger n'est pas dans le tableau";
+}*/
+
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST) || isset($_GET["searchTextInput"])) {
     try {
         //saveDataPage();
         #$dataHtmlPage = addDataHtmlPageToArray();
-
-        $wordToSearch = mb_strtolower($_POST["searchText"]);
+        $wordToSearch = "";
+        if(isset($_GET["searchTextInput"])){
+            $wordToSearch = $_GET["searchTextInput"];
+        } else if(isset($_POST["searchTextInput"])){
+            $wordToSearch = $_POST["searchTextInput"];
+        }
+        //$wordToSearch = mb_strtolower($_POST["searchTextInput"]);
         $description_page = "";
-
+        $lemmatisationArray = getWordsLemmatisation();
+        $wordToSearch = checkLemmatisationWord($wordToSearch, $lemmatisationArray);
         
 
         // $sqlQuery = "SELECT * FROM word_occurence WHERE mot='$wordToSearch' ORDER BY nb_occurence DESC";
@@ -91,7 +99,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST)) {
         // $searchWordFile = $result->fetchAll();
 
         $searchWordPage = getAllPageData($wordToSearch);
+
+        $wordsCorrection = checkWordInput($wordToSearch, $lemmatisationArray);
+        $nbElemArrayCorrection = count($wordsCorrection);
+
+        if(count($searchWordPage) == 0){
+            if($wordsCorrection != ""){
+                $i = 1;
+                echo "Vous avez peut-être voulu dire: <br><span>";
+                foreach ($wordsCorrection as $word){
+                    ?>
+                    <a href="#" onclick='postForm("<?php echo $word;?>")'> <?php echo $word;?> </a>
+                    <?php
+                    if($i !== $nbElemArrayCorrection){
+                        echo ", ";
+                    }
+                    $i += 1;
+                }
+                echo "</span>";
+            }
+        }
+        
 ?>
+</div>
         <div class="divSearchResult">
 
             <p style="text-align: center;">Le mot '<?php echo $wordToSearch; ?>' est présent dans <?php echo count($searchWordPage);
@@ -135,7 +165,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST)) {
                 }
             } ?>
         </div>
-<?php
+<?php   
+        unset($_GET);
         unset($_POST);
         unset($_REQUEST);
     } catch (Exception $e) {
