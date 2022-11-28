@@ -195,6 +195,8 @@ et
 etant
 etc
 etre
+être
+été
 eu
 eue
 eues
@@ -278,6 +280,8 @@ juste
 k
 l
 la
+lâ
+là
 laquelle
 las
 le

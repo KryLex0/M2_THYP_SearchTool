@@ -266,7 +266,8 @@ function saveDataDB(){
         }
         else if(strpos($file, ".txt") || strpos($file, ".TXT")){
             $arrayTextDataFile = getArrayFromTextFile($file, "");
-            $titleFile = "Fichier Texte: " . $file;
+            $titleFile = implode(' ', array_slice(explode(' ', $fileContent), 0, 5));
+//"Fichier Texte: " . $file;
             $descriptionFile = getDescriptionTextFile($fileContent);
             insertDataDB($file, $titleFile, $descriptionFile, $arrayTextDataFile);
             //echo $titleFile . " || " . $descriptionFile . "</br>";
@@ -413,12 +414,13 @@ function displayArrayWordsOccurence($page, $pageID){
         echo "<div class='wordCloud' id='wordCloud_" . $pageID . "' style='text-align:center;display:none'>";
         foreach ($arrayWords as $key => $val) {
             #print_r($val);
-            if ($nbWords == 10) {
+            if ($nbWords%5 == 0) {
                 echo "<br>";
             }
             $textColor = "blue";
             if ($nbWords < 20) {
                 $textSize = (($val["nbOccurence"] % 6) * 10) * 1.5;
+                /*
                 if($textSize < 16){
                     $textColor = "purple";
                 }else if($textSize < 31){
@@ -428,6 +430,9 @@ function displayArrayWordsOccurence($page, $pageID){
                 }else if($textSize > 59){
                     $textColor = "red";
                 }
+                */
+                $randomTextColor = ["purple", "green", "orange", "red", "darkblue", "darkgreen", "darkorange", "darkred", "blue"];
+                $textColor = $randomTextColor[array_rand($randomTextColor)];
                 $word = mb_strtolower($val["mot"], "UTF-8");
                 echo "<span value=" . $word ." style='font-size:" . $textSize . "px; display:inline;color:" . $textColor . "'>" . $word . "</span>";
                 //onclick='postForm(this)'

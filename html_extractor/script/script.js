@@ -1,5 +1,6 @@
 function addDataBDD() {
     document.getElementById("operation_BDD").innerHTML = "Sauvegarde des données en cours...";
+    document.getElementById("loading").style.display = "block";
     $.ajax({
         type: "POST",
         url: "phpScript/add_data.php",
@@ -12,6 +13,8 @@ function addDataBDD() {
             resultAction(data);
             alert("Les données des différents fichiers ont bien été sauvegardé dans la base de données !")
             document.getElementById("operation_BDD").innerHTML = "Sauvegarde des données terminée !";
+            document.getElementById("loading").style.display = "none";
+
 
             //console.log(html);
 
