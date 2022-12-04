@@ -7,19 +7,23 @@ function addDataBDD() {
         data:{action:'addSuccess'},
         //success:function(azerty) {
         }).done(function (data) {
-
-        //resultAction();
-            console.log(data);
             resultAction(data);
-            alert("Les données des différents fichiers ont bien été sauvegardé dans la base de données !")
             document.getElementById("operation_BDD").innerHTML = "Sauvegarde des données terminée !";
             document.getElementById("loading").style.display = "none";
 
+            alert("Les données des différents fichiers ont bien été sauvegardé dans la base de données !")
 
-            //console.log(html);
-
+            window.location = "admin_page.php";
      });
 
+}
+
+$(function() {
+    $('#dataTable').DataTable();
+})
+
+function deleteDir(fileName){
+    console.log(fileName);
 }
 
 function removeDataBDD() {
@@ -33,10 +37,10 @@ function removeDataBDD() {
         }).done(function (data) {
             resultAction(data);
 
-            alert("Les données présentes dans la BDD ont bien été supprimés !")
             document.getElementById("operation_BDD").innerHTML = "Suppression des données terminée !";
+            alert("Les données présentes dans la BDD ont bien été supprimés !")
 
-            //console.log(html);
+            window.location = "admin_page.php";
     });
 }
 

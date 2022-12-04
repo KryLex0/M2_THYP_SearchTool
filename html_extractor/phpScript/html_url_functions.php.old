@@ -98,7 +98,7 @@ function getBodycontent($url){
     return $bodyContent;
 }
 
-function getPageDescription($page){
+function getfileDescription($page){
     $description_page = "";
     if (array_key_exists("description", $page[0]["MetaData"])) {
         $description_page = implode(' ', array_slice(explode(' ', $page[0]["MetaData"]["description"]), 0, 13)) . "</br>" . implode(' ', array_slice(explode(' ', $page[0]["MetaData"]["description"]), 13, 15)) . "...";
@@ -145,9 +145,9 @@ function getArrayWordsOccurence($page){
 
     $pageMetaData = "";
 
-    $pageURL  = $page["URL"];
-    $pageTitle  = $page[0]["Title"];
-    $pageDescription  = getPageDescription($page);
+    $fileURL  = $page["URL"];
+    $fileTitle  = $page[0]["Title"];
+    $fileDescription  = getfileDescription($page);
 
     foreach ($page[0] as $val) {
         if (is_array($val)) {
@@ -156,10 +156,10 @@ function getArrayWordsOccurence($page){
             }
         }
     }
-    //$tab_occurence_head.array_push($pageTitle);
-    //$tab_occurence_head.array_push($pageDescription);
+    //$tab_occurence_head.array_push($fileTitle);
+    //$tab_occurence_head.array_push($fileDescription);
 
-    $tab_occurence_head = array($pageTitle, $pageDescription, $pageMetaData);
+    $tab_occurence_head = array($fileTitle, $fileDescription, $pageMetaData);
     $tab_occurence_head = getTabOccurenceHead($tab_occurence_head);
     #print_r($tab_occurence_head);
 
@@ -230,13 +230,13 @@ function saveDataPage(){
         $arrayHtmlLinks = array();
         $tab_pages = addDataHtmlPageToArray($arrayHtmlLinks);
         foreach($tab_pages as $page){
-            $pageURL  = $page[0]["URL"];
-            $pageTitle  = $page[0]["Title"];
-            $pageDescription  = getPageDescription($page);
+            $fileURL  = $page[0]["URL"];
+            $fileTitle  = $page[0]["Title"];
+            $fileDescription  = getfileDescription($page);
 
             $arrayWordOccurence = getArrayWordsOccurence($page);
 
-            $sqlQuery = "INSERT INTO page_data(pageURL, pageTitle, pageDescription) VALUES('$pageURL', '$pageTitle', '$pageDescription')";
+            $sqlQuery = "INSERT INTO page_data(fileURL, fileTitle, fileDescription) VALUES('$fileURL', '$fileTitle', '$fileDescription')";
             $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
             $result->execute();
             $pageID = $GLOBALS["mysqlClient"]->lastInsertId();

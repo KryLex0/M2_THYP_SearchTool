@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Hôte : 127.0.0.1:3306
--- Généré le :  Dim 27 nov. 2022 à 17:49
+-- Généré le :  Dim 04 déc. 2022 à 00:44
 -- Version du serveur :  10.4.10-MariaDB
 -- Version de PHP :  7.3.12
 
@@ -31,9 +31,10 @@ SET time_zone = "+00:00";
 DROP TABLE IF EXISTS `page_data`;
 CREATE TABLE IF NOT EXISTS `page_data` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `pageURL` varchar(255) NOT NULL,
-  `pageTitle` varchar(255) NOT NULL,
-  `pageDescription` varchar(255) NOT NULL,
+  `fileURL` varchar(255) NOT NULL,
+  `fileTitle` varchar(255) NOT NULL,
+  `fileDescription` varchar(255) NOT NULL,
+  `fileTimestamp` int(11) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 

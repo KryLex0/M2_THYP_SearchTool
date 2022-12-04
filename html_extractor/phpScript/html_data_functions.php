@@ -247,10 +247,11 @@ function getWordOccurenceBody($arrayWordOccurence, $bodyContentPage){
 /***************************************************************************/
 
 function saveDataDB(){
-    $arrayFiles = explorerDir($GLOBALS["fileFolder"], $GLOBALS["extensionAccepte"], $GLOBALS["arrayPathFile"]);
+    $arrayFiles = explorerDir($GLOBALS["fileFolder"], $GLOBALS["extensionAccepte"], $GLOBALS["arrayPathFile"]);    
     foreach ($arrayFiles as $file){
         //if its a html file
         $fileContent = getFileContent($file);
+        $timestampFile = filemtime($file);
 
         if(strpos($file, ".html") || strpos($file, ".HTML")){
             #echo $fileContent;
@@ -261,7 +262,7 @@ function saveDataDB(){
             #echo $title . "::" . $bodyContent . "</br>";
             #print_r($metaData);
             $arrayPageData = getArrayFromPageData($titlePage, $bodyContentPage, $metaDataPage);
-            insertDataDB($file, $titlePage, $descriptionPage, $arrayPageData);
+            checkDataDB($file, $titlePage, $descriptionPage, $timestampFile, $arrayPageData);
             //echo $titlePage . " || " . $descriptionPage . "</br>";
         }
         else if(strpos($file, ".txt") || strpos($file, ".TXT")){
@@ -269,7 +270,7 @@ function saveDataDB(){
             $titleFile = implode(' ', array_slice(explode(' ', $fileContent), 0, 5));
 //"Fichier Texte: " . $file;
             $descriptionFile = getDescriptionTextFile($fileContent);
-            insertDataDB($file, $titleFile, $descriptionFile, $arrayTextDataFile);
+            checkDataDB($file, $titleFile, $descriptionFile, $timestampFile, $arrayTextDataFile);
             //echo $titleFile . " || " . $descriptionFile . "</br>";
         } else if(strpos($file, ".pdf") || strpos($file, ".PDF")){
             $az = new PDF2Text();
@@ -280,7 +281,7 @@ function saveDataDB(){
             $arrayTextData = getArrayFromTextFile("", $textPDFContent);
             $titleFile = "Fichier PDF: " . $file;
             $descriptionFile = getDescriptionTextFile($textPDFContent);
-            insertDataDB($file, $titleFile, $descriptionFile, $arrayTextData);
+            checkDataDB($file, $titleFile, $descriptionFile, $timestampFile, $arrayTextData);
 
 
 
@@ -336,45 +337,45 @@ function getDescriptionTextFile($fileContent){
     return str_replace("'", "\'", $description_page);
 }
 
-function insertFileData($file, $title, $description){
-    $sqlQuery = "INSERT INTO page_data(pageURL, pageTitle, pageDescription) VALUES('$file', '$title', '$description')";
-    //echo "insertFileData : " . $sqlQuery . "</br>";
-    $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
-    $result->execute();       
-    
-    return $GLOBALS["mysqlClient"]->lastInsertId();
-}
-
-
-function insertDataDB($file, $title, $description, $arrayPageData){
-    $idPage = insertFileData($file, $title, $description);
-    foreach ($arrayPageData as $word => $occurence){
-        $sqlQuery = "INSERT INTO word_list(mot, nbOccurence, idPage) VALUES('$word', '$occurence', '$idPage')";
-        $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
-        $result->execute();       
-        #return $GLOBALS["mysqlClient"]->lastInsertId();
-    }
-}
-
-
-function removeDataDB(){
-    $sqlQuery = "TRUNCATE TABLE page_data";
-    $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
-    $result->execute();
-
-    $sqlQuery = "TRUNCATE TABLE word_list";
-    $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
-    $result->execute();  
-}
-
+// get all data based on the wordToSearch
 function getAllPageData($wordToSearch){
-    $sqlQuery = "SELECT pageData.id, pageData.pageURL, pageData.pageTitle, pageData.pageDescription, wordList.mot, wordList.idPage FROM page_data pageData, word_list wordList WHERE wordList.mot='$wordToSearch' AND pageData.id=wordList.idPage ORDER BY nbOccurence DESC";
+    $sqlQuery = "SELECT pageData.id, pageData.fileURL, pageData.fileTitle, pageData.fileDescription, pageData.fileTimestamp, wordList.mot, wordList.idPage, wordList.nbOccurence FROM page_data pageData, word_list wordList WHERE wordList.mot='$wordToSearch' AND pageData.id=wordList.idPage ORDER BY nbOccurence DESC";
 
     $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
     $result->execute();
     return $result->fetchAll();
 }
 
+// get all page data
+function getPageData(){
+    $sqlQuery = "SELECT * FROM page_data ORDER BY id DESC";
+
+    $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
+    $result->execute();
+    return $result->fetchAll();
+}
+
+
+// get page data by url file
+function getPageDataByURL($fileURL){
+    $sqlQuery = "SELECT * FROM page_data WHERE fileURL='$fileURL'";
+
+    $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
+    $result->execute();
+    return $result->fetchAll();
+}
+
+// get word_list data by id
+// used to display summary of indexed files in admin panel
+function getWordDataPage($pageID){
+    $sqlQuery = "SELECT COUNT(*) AS countOccurence, MAX(nbOccurence) AS maxOccurence, mot FROM word_list WHERE idPage=$pageID";
+
+    $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
+    $result->execute();
+    return $result->fetchAll();
+}
+
+// check if words are in page based on idPage
 function isWordInPage($idPage){
     //$tab_pages = addDataHtmlPageToArray($array_html_links);
     $returnValue = false;
@@ -391,6 +392,158 @@ function isWordInPage($idPage){
     return $returnValue;
 }
 
+/************************************************************************/
+/************************Database Functions******************************/
+/************************************************************************/
+
+// add file data to database
+function insertFileData($file, $title, $description, $timestamp){
+    $sqlQuery = "INSERT INTO page_data(fileURL, fileTitle, fileDescription, fileTimestamp) VALUES('$file', '$title', '$description', '$timestamp')";
+    //echo "insertFileData : " . $sqlQuery . "</br>";
+    $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
+    $result->execute();       
+    
+    return $GLOBALS["mysqlClient"]->lastInsertId();
+}
+
+// add word data to database
+function insertWordDataDB($idPage, $arrayPageData){
+    foreach ($arrayPageData as $word => $occurence){
+        $sqlQuery = "INSERT INTO word_list(mot, nbOccurence, idPage) VALUES('$word', '$occurence', '$idPage')";
+        $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
+        $result->execute();       
+        #return $GLOBALS["mysqlClient"]->lastInsertId();
+    }
+}
+
+// check if word data already exists in database
+function checkDataDB($file, $title, $description, $timestamp, $arrayPageData){
+    $fileData = checkFileData($file, $title, $description, $timestamp);
+    $idPage = $fileData[0];
+    $isInDB = $fileData[1];
+    $isTimestampDifferent = $fileData[2];
+    // if file is in database, delete all words associated to this file
+    if($isInDB){
+        // if timestamp is different, delete all words associated to this file and insert new words
+        if($isTimestampDifferent){
+            deleteWordDataDB($idPage);
+            insertWordDataDB($idPage, $arrayPageData);
+        }
+    }else{
+        // insert word data in database if file is not in database
+        insertWordDataDB($idPage, $arrayPageData);
+    }
+}
+
+// check if file is already in database
+function checkFileData($fileURL, $title, $description, $timestamp){
+    $fileData = getPageDataByURL($fileURL);
+    $isInDB = false;
+    $isTimestampDifferent = false;
+    // if file is in database
+    if($fileData){
+        $idPage = $fileData[0]["id"];
+        if(strval($fileData[0]["fileTimestamp"]) !== strval($timestamp)){
+            // update file data in database if timestamp is different
+            updateFileData($fileURL, $title, $description, $timestamp);
+            $isTimestampDifferent = true;
+        }else{
+            $isTimestampDifferent = false;
+        }
+            $isInDB = true;
+    } else {
+        // insert file data in database
+        $idPage = insertFileData($fileURL, $title, $description, $timestamp);
+        $isInDB = false;
+        
+    }
+    return array($idPage, $isInDB, $isTimestampDifferent);
+}
+
+// update file data in database
+function updateFileData($fileURL, $title, $description, $timestamp){
+    $sqlQuery = "UPDATE page_data SET fileTitle = '$title', fileDescription = '$description', fileTimestamp = '$timestamp' WHERE fileURL = '$fileURL'";
+    $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
+    $result->execute();       
+    return $GLOBALS["mysqlClient"]->lastInsertId();
+}
+
+// delete word data from database
+function deleteWordDataDB($idPage){
+    $sqlQuery = "DELETE FROM word_list WHERE idPage = $idPage";
+    $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
+    $result->execute(); 
+}
+
+// truncate tables
+function removeDataDB(){
+    $sqlQuery = "TRUNCATE TABLE page_data";
+    $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
+    $result->execute();
+
+    $sqlQuery = "TRUNCATE TABLE word_list";
+    $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
+    $result->execute();  
+}
+
+/************************************************************************/
+/***********************Pagination Functions*****************************/
+/************************************************************************/
+
+//fonction qui permet d'obtenir l'url de la page précédente
+function getPreviousfileURL(){
+    $previousPageNumber = $_GET["numPage"] - 1;
+    $baseUrl = strtok($_SERVER['REQUEST_URI'], '&');
+    $previousfileURL = $baseUrl . "&numPage=" . $previousPageNumber;
+    return $previousfileURL;
+}
+
+//fonction qui permet d'obtenir l'url de la page suivante
+function getNextfileURL(){
+    $nextPageNumber = $_GET["numPage"] + 1;
+    $baseUrl = strtok($_SERVER['REQUEST_URI'], '&');
+    $nextfileURL = $baseUrl . "&numPage=" . $nextPageNumber;
+    return $nextfileURL;
+}
+
+//fonction qui permet d'obtenir une url en fonction du numéro de page passé en paramètre
+function getfileURLByNumber($numNewPage){
+    $baseUrl = strtok($_SERVER['REQUEST_URI'], '&');
+    $nextfileURL = $baseUrl . "&numPage=" . $numNewPage;
+    return $nextfileURL;
+}
+
+//si les données retournés de la requete sont vides, modifie une variable de l'url et affiche la dernière page possédant des résultats 
+function verifLastPage($baseURL, $nbPageData){
+    if($_GET["numPage"] > $nbPageData){
+        $query = $_GET;
+        $query['numPage'] = $nbPageData;
+        $query_result = http_build_query($query);
+        header("LOCATION:" . $baseURL . "?" . $query_result);
+        exit();
+    }else if($_GET["numPage"] < 1){
+        $query = $_GET;
+        $query['numPage'] = 1;
+        $query_result = http_build_query($query);
+
+        header("LOCATION:" . $baseURL . "?" . $query_result);
+        exit();
+    }
+
+}
+
+function rebuilURL($wordLike){
+    $query = $_GET;
+    $query['searchTextInput'] = $wordLike;
+    $query_result = http_build_query($query);
+
+    return $query_result;
+}
+
+/************************************************************************/
+/*************************Display Functions******************************/
+/************************************************************************/
+
 function displayWords($pageID){
     $sqlQuery = "SELECT DISTINCT wordList.mot, wordList.nbOccurence FROM page_data pageData, word_list wordList WHERE wordList.idPage='$pageID' ORDER BY nbOccurence DESC";
     $result = $GLOBALS["mysqlClient"]->prepare($sqlQuery);
@@ -400,9 +553,6 @@ function displayWords($pageID){
     shuffle($wordsOccurence);
     displayArrayWordsOccurence($wordsOccurence, $pageID);
 }
-
-/************************************************************************/
-
 
 function displayArrayWordsOccurence($page, $pageID){
     //$tab_pages = addDataHtmlPageToArray();
