@@ -12,7 +12,7 @@ header('Content-Type: text/html; charset=UTF-8');
 $pathTextFile = $pathParent . "/phpScript/fichiers_txt";
 
 //nombre d'element à afficher par page
-$nbElemPage = 6;
+$nbElemPage = 3;
 
 
 //$htmlLinksArray = addHtmlLinksToArray();
@@ -47,14 +47,20 @@ foreach($metadatas as $meta=>$val){
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script type="text/javascript" src="script/script.js"></script>
 
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.6/dist/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.2.1/dist/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+
 <button onClick="pageAccessPassword()">Page d'insertion</button>
 
 <!--<h3 style="text-align: center;">Outil de recherche</h3>-->
 <center><a href="index.php"><img class="logo" src="ressources/logo.png" style="width:15%"></a></center>
 <div class="divSearchBar">
     <form method="GET" action="index.php" id="searchWordForm" style="text-align: center;">
-        <span><input id="searchTextInput" type="text" name="searchTextInput" required="required">
-        <input type=submit value="Rechercher">
+        <span><input id="searchTextInput" type="text" name="searchTextInput" required="required"></span>
+        </br>
+        <button type=submit class="btn btn-info">Rechercher</button>
 
     </form>
 
@@ -89,8 +95,8 @@ if(in_array("manger", $lemmatisation)){
 else{
     echo "manger n'est pas dans le tableau";
 }*/
-//$varTMP = checkDataDB("../file_folder/fichier3.txt", "manger", "lemmatisation.csv", "1666090821", "");
-//print_r($varTMP);
+    //$varTMP = checkDataDB("../file_folder/fichier3.txt", "manger", "lemmatisation.csv", "1666090821", "");
+    //print_r($varTMP);
 
     if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST) || isset($_GET["searchTextInput"])) {
         try {
@@ -104,7 +110,7 @@ else{
             }
 
             //if no page number is set, set it to 1
-            if(!$_GET["numPage"]){
+            if (!$_GET["numPage"]) {
                 //$_POST["defaultURL"] = $_SERVER['REQUEST_URI'] . "?searchTextInput=" . $wordToSearch;
                 header("LOCATION: ?searchTextInput=" . $wordToSearch . "&numPage=1");
                 exit();
@@ -123,10 +129,10 @@ else{
             $searchWordPage = getAllPageData($wordToSearch);
 
             //permet d'obtenir le nombre de page qui contiendront 6 elements de la BDD par page (58/6 arrondi au supérieur donne 10 pages de 6 élements max) 
-            if(ceil(count($searchWordPage)/$nbElemPage) == 0){
+            if (ceil(count($searchWordPage) / $nbElemPage) == 0) {
                 $nbPageData = 1;
-            }else{
-                $nbPageData = ceil(count($searchWordPage)/$nbElemPage);
+            } else {
+                $nbPageData = ceil(count($searchWordPage) / $nbElemPage);
             }
 
             //offset qui permet d'obtenir les lignes de données à partir du numéro de page (page 2 => de l'élement 7 à ...)
@@ -142,14 +148,14 @@ else{
             $nbOccurFile = count($searchWordPage);
 
             if ($nbOccurFile == 0) {
-                if(!empty($wordsCorrection)){
+                if (!empty($wordsCorrection)) {
                     if ($wordsCorrection != "" && $wordsCorrection[0] !== $wordToSearch) {
                         $i = 1;
                         echo "Vous avez peut-être voulu dire: <br><span>";
                         foreach ($wordsCorrection as $word) {
-                            ?>
-                            <a href="<?php echo "?" . rebuilURL($word);?>" onclick='postForm("<?php echo $word; ?>")'> <?php echo $word; ?> </a>
-                            <?php
+    ?>
+                            <a href="<?php echo "?" . rebuilURL($word); ?>" onclick='postForm("<?php echo $word; ?>")'> <?php echo $word; ?> </a>
+            <?php
                             if ($i !== $nbElemArrayCorrection) {
                                 echo ", ";
                             }
@@ -158,7 +164,7 @@ else{
                         echo "</span>";
                     }
                 }
-            }else{
+            } else {
                 $searchWordPage = array_slice($searchWordPage, $numDepartElem, $nbElemPage);
             }
 
@@ -209,57 +215,59 @@ else{
             } ?>
 </div>
 <?php
-            
+
         } catch (Exception $e) {
             // En cas d'erreur, on affiche un message et on arrête tout
             die('Erreur : ' . $e->getMessage());
         }
 
-        ?>
+?>
 
 <!--Bouton de numéro de page
 1, 2, [3], 4, 5, ..., 30-->
 <div class="changePage">
     <div class="changePageButton">
-        
+
         <!-- Affiche un bouton qui redirige vers la page 1 lorsqu'on se trouve sur une autre page que la page 1 -->
-        <?php if($_GET["numPage"] != 1){?>
+        <?php if ($_GET["numPage"] != 1) { ?>
             <!-- Aller à la 1ère page -->
-            <a href=<?php echo getfileURLByNumber(1); ?> class="btn btn-info" style="background-color:red"><<</a>
-            <!-- Aller à la page précédente -->
-            <a href=<?php echo getPreviousfileURL(); ?> class="btn btn-info" style="margin-right:10px;background-color:green"><</a>
+            <a href=<?php echo getfileURLByNumber(1); ?> class="btn btn-info" style="background-color:red">
+                <<< /a>
+                    <!-- Aller à la page précédente -->
+                    <a href=<?php echo getPreviousfileURL(); ?> class="btn btn-info" style="margin-right:10px;background-color:green">
+                        << /a>
 
-            <a href=<?php echo getfileURLByNumber(1); ?> class="btn btn-info"><?php echo (1); ?></a>
-        <?php }
+                            <a href=<?php echo getfileURLByNumber(1); ?> class="btn btn-info"><?php echo (1); ?></a>
+                            <?php }
 
-            for($i=-2; $i<3; $i++){
-                //s'il y a une différence > 2 entre la 1ère page et la page actuelle (ou entre la dernière page et la page actuelle), affiche [...]
-                if($i == -2 && $_GET["numPage"] + $i > 2 || $i == 2 && $_GET["numPage"] + $i < $nbPageData ){
-                    ?><a class="btn btn-info" readonly><?php echo("..."); ?></a><?php                    
-                }
-                //affiche le numéro de page actuel
-                elseif($i == 0){
-                    ?><strong><a class="btn btn-info" style="background-color:grey"><?php echo ($_GET["numPage"] + $i); ?></a></strong><?php
-                    
-                //affiche les numéros de pages précédents et suivants autour de la page actuelle
-                }elseif($_GET["numPage"] + $i > 1 && $_GET["numPage"] + $i < $nbPageData ){
-                ?>
-                <a href=<?php echo getfileURLByNumber($_GET["numPage"] + $i); ?> class="btn btn-info"><?php echo ($_GET["numPage"] + $i); ?></a>
+                        for ($i = -2; $i < 3; $i++) {
+                            //s'il y a une différence > 2 entre la 1ère page et la page actuelle (ou entre la dernière page et la page actuelle), affiche [...]
+                            if ($i == -2 && $_GET["numPage"] + $i > 2 || $i == 2 && $_GET["numPage"] + $i < $nbPageData) {
+                            ?><a class="btn btn-info" readonly><?php echo ("..."); ?></a><?php
+                                                                                        }
+                                                                                        //affiche le numéro de page actuel
+                                                                                        elseif ($i == 0) {
+                                                                                            ?><strong><a class="btn btn-info" style="background-color:grey"><?php echo ($_GET["numPage"] + $i); ?></a></strong><?php
 
-            <?php
-                }
-            }
+                                                                                                                                                                                                    //affiche les numéros de pages précédents et suivants autour de la page actuelle
+                                                                                                                                                                                                } elseif ($_GET["numPage"] + $i > 1 && $_GET["numPage"] + $i < $nbPageData) {
+                                                                                                                                                                                                    ?>
+                                <a href=<?php echo getfileURLByNumber($_GET["numPage"] + $i); ?> class="btn btn-info"><?php echo ($_GET["numPage"] + $i); ?></a>
 
-        //Affiche un bouton qui redirige vers la dernière page lorsqu'on se trouve sur une autre page que la dernière
-        if($_GET["numPage"] != $nbPageData){?>
-            <a href=<?php echo getfileURLByNumber($nbPageData); ?> class="btn btn-info"><?php echo ($nbPageData); ?></a>
-            <!-- Aller à la page suivante -->
-            <a href=<?php echo getNextfileURL(); ?> class="btn btn-info" style="margin-left:10px;background-color:green">></a>
-            <!-- Aller à la dernière page -->
-            <a href=<?php echo getfileURLByNumber($nbPageData); ?> class="btn btn-info" style="background-color:red">>></a>
-        <?php } ?>
+                            <?php
+                                                                                                                                                                                                }
+                                                                                                                                                                                            }
 
-        
+                                                                                                                                                                                            //Affiche un bouton qui redirige vers la dernière page lorsqu'on se trouve sur une autre page que la dernière
+                                                                                                                                                                                            if ($_GET["numPage"] != $nbPageData) { ?>
+                            <a href=<?php echo getfileURLByNumber($nbPageData); ?> class="btn btn-info"><?php echo ($nbPageData); ?></a>
+                            <!-- Aller à la page suivante -->
+                            <a href=<?php echo getNextfileURL(); ?> class="btn btn-info" style="margin-left:10px;background-color:green">></a>
+                            <!-- Aller à la dernière page -->
+                            <a href=<?php echo getfileURLByNumber($nbPageData); ?> class="btn btn-info" style="background-color:red">>></a>
+                        <?php } ?>
+
+
     </div>
 </div>
 <?php
