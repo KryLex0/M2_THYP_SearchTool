@@ -561,7 +561,7 @@ function displayArrayWordsOccurence($page, $pageID){
         #print_r($page);
         $arrayWords = $page;//getArrayWordsOccurence($page);
         $nbWords = 0;
-        echo "<div class='wordCloud' id='wordCloud_" . $pageID . "' style='text-align:center;display:none'>";
+        echo "<center><div class='wordCloud' id='wordCloud_" . $pageID . "' style='padding:2%;text-align:center;width:max-content;display:none;box-shadow:0px 2px 10px rgba(0,0,0,0.3);border-radius:10px;'>";
         foreach ($arrayWords as $key => $val) {
             #print_r($val);
             if ($nbWords%5 == 0) {
@@ -589,7 +589,7 @@ function displayArrayWordsOccurence($page, $pageID){
                 $nbWords += 1;
             }
         }
-        echo "</div>";
+        echo "</div></center>";
 
 
     #}
